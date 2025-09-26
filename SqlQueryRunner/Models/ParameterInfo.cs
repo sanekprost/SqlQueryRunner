@@ -88,13 +88,13 @@ namespace SqlQueryRunner.Models
         public string GetTooltip()
         {
             var tooltip = $"Параметр: @{Name}\nТип: {SqlType}";
-
+            
             if (!string.IsNullOrWhiteSpace(Description))
                 tooltip += $"\n\n{Description}";
-
+                
             if (HasDefault)
                 tooltip += $"\nПо умолчанию: {DefaultValue ?? "NULL"}";
-
+                
             return tooltip;
         }
 
@@ -118,19 +118,19 @@ namespace SqlQueryRunner.Models
             {
                 case ParameterType.String:
                     return ValidateStringValue(value);
-
+                    
                 case ParameterType.Integer:
                     return ValidateIntegerValue(value);
-
+                    
                 case ParameterType.Decimal:
                     return ValidateDecimalValue(value);
-
+                    
                 case ParameterType.DateTime:
                     return ValidateDateTimeValue(value);
-
+                    
                 case ParameterType.Boolean:
                     return ValidateBooleanValue(value);
-
+                    
                 default:
                     return ValidationResult.Success;
             }
@@ -141,10 +141,9 @@ namespace SqlQueryRunner.Models
             var stringValue = value.ToString();
             if (MaxLength.HasValue && stringValue?.Length > MaxLength.Value)
             {
-                return new ValidationResult(false,
+                return new ValidationResult(false, 
                     $"Длина параметра '{GetDisplayName()}' не должна превышать {MaxLength.Value} символов");
             }
-
             return ValidationResult.Success;
         }
 
@@ -152,10 +151,9 @@ namespace SqlQueryRunner.Models
         {
             if (value is not int && !int.TryParse(value.ToString(), out _))
             {
-                return new ValidationResult(false,
+                return new ValidationResult(false, 
                     $"Параметр '{GetDisplayName()}' должен быть целым числом");
             }
-
             return ValidationResult.Success;
         }
 
@@ -163,10 +161,9 @@ namespace SqlQueryRunner.Models
         {
             if (value is not decimal && !decimal.TryParse(value.ToString(), out _))
             {
-                return new ValidationResult(false,
+                return new ValidationResult(false, 
                     $"Параметр '{GetDisplayName()}' должен быть числом");
             }
-
             return ValidationResult.Success;
         }
 
@@ -174,10 +171,9 @@ namespace SqlQueryRunner.Models
         {
             if (value is not DateTime && !DateTime.TryParse(value.ToString(), out _))
             {
-                return new ValidationResult(false,
+                return new ValidationResult(false, 
                     $"Параметр '{GetDisplayName()}' должен быть датой");
             }
-
             return ValidationResult.Success;
         }
 
@@ -185,10 +181,9 @@ namespace SqlQueryRunner.Models
         {
             if (value is not bool && !bool.TryParse(value.ToString(), out _))
             {
-                return new ValidationResult(false,
+                return new ValidationResult(false, 
                     $"Параметр '{GetDisplayName()}' должен быть логическим значением");
             }
-
             return ValidationResult.Success;
         }
 
@@ -197,74 +192,4 @@ namespace SqlQueryRunner.Models
             return $"{GetDisplayName()} (@{Name}, {SqlType})";
         }
     }
-
-
-    !DateTime.TryParse(value.ToString(), out _))
-    {
-        return new ValidationResult(false,
-            $"Параметр '{GetDisplayName()}' должен быть датой");
-    }
-    return ValidationResult.Success;
-}
-
-private ValidationResult ValidateBooleanValue(object value)
-{
-    if (value is not bool && !bool.TryParse(value.ToString(), out _))
-    {
-        return new ValidationResult(false,
-            $"Параметр '{GetDisplayName()}' должен быть логическим значением");
-    }
-
-    return ValidationResult.Success;
-}
-
-public override string ToString()
-{
-    return $"{GetDisplayName()} (@{Name}, {SqlType})";
-}
-}
-} !DateTime.TryParse(value.ToString(), out _))
-{
-    return new ValidationResult(false,
-        $"Параметр '{GetDisplayName()}' должен быть датой");
-}
-return ValidationResult.Success;
-}
-
-private ValidationResult ValidateBooleanValue(object value)
-{
-    if (value is not bool && !bool.TryParse(value.ToString(), out _))
-    {
-        return new ValidationResult(false,
-            $"Параметр '{GetDisplayName()}' должен быть логическим значением");
-    }
-
-    return ValidationResult.Success;
-}
-
-public override string ToString()
-{
-    return $"{GetDisplayName()} (@{Name}, {SqlType})";
-}
-}
-}
-
-/// <summary>
-/// Результат валидации параметра
-/// </summary>
-public class ValidationResult
-{
-    public bool IsValid { get; }
-    public string ErrorMessage { get; }
-
-    public ValidationResult(bool isValid, string errorMessage = "")
-    {
-        IsValid = isValid;
-        ErrorMessage = errorMessage;
-    }
-
-    public static ValidationResult Success => new(true);
-    public static ValidationResult Error(string message) => new(false, message);
-}
-
 }

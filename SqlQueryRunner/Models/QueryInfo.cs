@@ -1,10 +1,21 @@
-﻿namespace SqlQueryRunner.Models;
+﻿using System.Collections.Generic;
 
-public class QueryInfo
+namespace SqlQueryRunner.Models
 {
-    public string FileName { get; set; } = string.Empty;
-    public string FullPath { get; set; } = string.Empty;
-    public List<ParameterInfo> Parameters { get; set; } = new();
-    public string SqlContent { get; set; } = string.Empty;
-    public string SqlWithoutDeclares { get; set; } = string.Empty;
+    /// <summary>
+    /// Информация о SQL запросе
+    /// </summary>
+    public class QueryInfo
+    {
+        public string Name { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string FilePath { get; set; } = string.Empty;
+        public List<ParameterInfo> Parameters { get; set; } = new();
+        public int ParametersCount { get; set; }
+        public bool HasAnnotations { get; set; }
+        public string? Error { get; set; }
+        public string? SqlContent { get; set; }
+        public string? SqlWithoutDeclares { get; set; }
+        public override string ToString() => DisplayName;
+    }
 }

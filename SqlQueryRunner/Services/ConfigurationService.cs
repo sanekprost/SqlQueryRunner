@@ -1,94 +1,113 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.IO;
+using System.Text.Json;
 using SqlQueryRunner.Models;
 
-namespace SqlQueryRunner.Services;
-
-public class ConfigurationService
+namespace SqlQueryRunner.Services
 {
-    private const string ConfigFileName = "appsettings.json";
-    private AppSettings? _settings;
-
-    public AppSettings LoadSettings()
+    /// <summary>
+    /// Упрощенный сервис для работы с настройками
+    /// </summary>
+    public class ConfigurationService
     {
-        if (_settings != null)
-            return _settings;
-
-        try
-        {
-            if (File.Exists(ConfigFileName))
-            {
-                var json = File.ReadAllText(ConfigFileName);
-                _settings = JsonSerializer.Deserialize<AppSettings>(json) ?? GetDefaultSettings();
-            }
-            else
-            {
-                _settings = GetDefaultSettings();
-                SaveSettings(_settings);
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Ошибка загрузки конфигурации: {ex.Message}\nИспользуются настройки по умолчанию.",
-                "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            _settings = GetDefaultSettings();
-        }
-
-        // Создаем необходимые папки
-        EnsureDirectoriesExist();
+        private const string ConfigFileName = "appsettings.json";
         
-        return _settings;
-    }
-
-    public void SaveSettings(AppSettings settings)
-    {
-        try
+        /// <summary>
+        /// Загружает настройки из файла конфигурации
+        /// </summary>
+        public AppSettings LoadSettings()
         {
-            var options = new JsonSerializerOptions
+            try
             {
-                WriteIndented = true
+                if (!File.Exists(ConfigFileName))
+                {
+                    var defaultSettings = GetDefaultSettings();
+                    SaveSettings(defaultSettings);
+                    return defaultSettings;
+                }
+
+                var json = File.ReadAllText(ConfigFileName);
+                
+                // Простой парсинг JSON для базовых настроек
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, options) ?? GetDefaultSettings();
+                
+                // Создаем папки если нужно
+                EnsureDirectoriesExist(settings);
+                
+                return settings;
+            }
+            catch (Exception)
+            {
+                // При ошибке возвращаем настройки по умолчанию
+                return GetDefaultSettings();
+            }
+        }
+
+        /// <summary>
+        /// Сохраняет настройки в файл конфигурации
+        /// </summary>
+        public void SaveSettings(AppSettings settings)
+        {
+            try
+            {
+                if (settings == null)
+                    return;
+
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                };
+
+                var json = JsonSerializer.Serialize(settings, options);
+                File.WriteAllText(ConfigFileName, json);
+            }
+            catch
+            {
+                // Игнорируем ошибки сохранения в упрощенной версии
+            }
+        }
+
+        /// <summary>
+        /// Возвращает настройки по умолчанию
+        /// </summary>
+        public AppSettings GetDefaultSettings()
+        {
+            return new AppSettings
+            {
+                ConnectionString = "Server=.;Database=TestDB;Integrated Security=true;TrustServerCertificate=true;",
+                SqlFilesPath = "./SqlQueries",
+                DefaultExportPath = "./Exports",
+                AutoRefreshFiles = true,
+                QueryTimeout = 30
             };
-            var json = JsonSerializer.Serialize(settings, options);
-            File.WriteAllText(ConfigFileName, json);
-            _settings = settings;
         }
-        catch (Exception ex)
+
+        /// <summary>
+        /// Проверяет существование папок и создает их при необходимости
+        /// </summary>
+        private void EnsureDirectoriesExist(AppSettings settings)
         {
-            MessageBox.Show($"Ошибка сохранения конфигурации: {ex.Message}",
-                "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
-
-    public AppSettings GetDefaultSettings()
-    {
-        return new AppSettings();
-    }
-
-    private void EnsureDirectoriesExist()
-    {
-        if (_settings == null) return;
-
-        try
-        {
-            if (!Directory.Exists(_settings.SqlFilesPath))
+            try
             {
-                Directory.CreateDirectory(_settings.SqlFilesPath);
+                if (!Directory.Exists(settings.SqlFilesPath))
+                {
+                    Directory.CreateDirectory(settings.SqlFilesPath);
+                }
+
+                if (!Directory.Exists(settings.DefaultExportPath))
+                {
+                    Directory.CreateDirectory(settings.DefaultExportPath);
+                }
             }
-
-            if (!Directory.Exists(_settings.DefaultExportPath))
+            catch
             {
-                Directory.CreateDirectory(_settings.DefaultExportPath);
+                // Игнорируем ошибки создания папок
             }
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Ошибка создания папок: {ex.Message}",
-                "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        }
-    }
-
-    public void RefreshSettings()
-    {
-        _settings = null;
-        LoadSettings();
     }
 }

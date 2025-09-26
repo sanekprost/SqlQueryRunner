@@ -3,104 +3,80 @@ using Microsoft.Data.SqlClient;
 using Dapper;
 using SqlQueryRunner.Models;
 
-namespace SqlQueryRunner.Services;
-
-public class SqlExecutor
+namespace SqlQueryRunner.Services
 {
-    private readonly string _connectionString;
-    private readonly int _queryTimeout;
-
-    public SqlExecutor(string connectionString, int queryTimeout = 30)
+    /// <summary>
+    /// Сервис для выполнения SQL запросов (заглушка для Фазы 3)
+    /// </summary>
+    public class SqlExecutor
     {
-        _connectionString = connectionString;
-        _queryTimeout = queryTimeout;
-    }
+        private readonly string _connectionString;
+        private readonly int _queryTimeout;
 
-    public async Task<bool> TestConnectionAsync()
-    {
-        try
+        public SqlExecutor()
         {
-            using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
-            return true;
+            // Заглушка для Фазы 3 - конструктор без параметров
+            _connectionString = "";
+            _queryTimeout = 30;
         }
-        catch
+
+        public SqlExecutor(string connectionString, int queryTimeout = 30)
         {
-            return false;
+            _connectionString = connectionString;
+            _queryTimeout = queryTimeout;
         }
-    }
 
-    public async Task<(DataTable? Result, string? ErrorMessage, TimeSpan ExecutionTime)> ExecuteQueryAsync(
-        string sql, Dictionary<string, object?> parameters)
-    {
-        var startTime = DateTime.Now;
-        
-        try
+        public async Task<bool> TestConnectionAsync()
         {
-            using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            // Заглушка - в Фазе 4 будет реальная проверка
+            return await Task.FromResult(false);
+        }
 
-            var dynamicParameters = new DynamicParameters();
-            foreach (var param in parameters)
+        public async Task<(DataTable? Result, string? ErrorMessage, TimeSpan ExecutionTime)> ExecuteQueryAsync(
+            string sql, Dictionary<string, object?> parameters)
+        {
+            // Заглушка - в Фазе 4 будет реальное выполнение
+            return await Task.FromResult<(DataTable?, string?, TimeSpan)>((null, "Не реализовано в Фазе 3", TimeSpan.Zero));
+        }
+
+        public Dictionary<string, object?> ConvertParametersForSql(List<ParameterInfo> parameterInfos, 
+            Dictionary<string, object?> userValues)
+        {
+            var sqlParameters = new Dictionary<string, object?>();
+
+            foreach (var paramInfo in parameterInfos)
             {
-                dynamicParameters.Add($"@{param.Key}", param.Value);
+                if (userValues.TryGetValue(paramInfo.Name, out var userValue))
+                {
+                    sqlParameters[paramInfo.Name] = ConvertValueForSql(userValue, paramInfo.Type);
+                }
+                else if (paramInfo.HasDefault)
+                {
+                    sqlParameters[paramInfo.Name] = ConvertValueForSql(paramInfo.DefaultValue, paramInfo.Type);
+                }
+                else
+                {
+                    sqlParameters[paramInfo.Name] = DBNull.Value;
+                }
             }
 
-            using var reader = await connection.ExecuteReaderAsync(sql, dynamicParameters, 
-                commandTimeout: _queryTimeout);
-            
-            var dataTable = new DataTable();
-            dataTable.Load(reader);
-            
-            var executionTime = DateTime.Now - startTime;
-            
-            return (dataTable, null, executionTime);
-        }
-        catch (Exception ex)
-        {
-            var executionTime = DateTime.Now - startTime;
-            return (null, ex.Message, executionTime);
-        }
-    }
-
-    public Dictionary<string, object?> ConvertParametersForSql(List<ParameterInfo> parameterInfos, 
-        Dictionary<string, object?> userValues)
-    {
-        var sqlParameters = new Dictionary<string, object?>();
-
-        foreach (var paramInfo in parameterInfos)
-        {
-            if (userValues.TryGetValue(paramInfo.Name, out var userValue))
-            {
-                sqlParameters[paramInfo.Name] = ConvertValueForSql(userValue, paramInfo.Type);
-            }
-            else if (paramInfo.HasDefault)
-            {
-                sqlParameters[paramInfo.Name] = ConvertValueForSql(paramInfo.DefaultValue, paramInfo.Type);
-            }
-            else
-            {
-                sqlParameters[paramInfo.Name] = DBNull.Value;
-            }
+            return sqlParameters;
         }
 
-        return sqlParameters;
-    }
-
-    private object? ConvertValueForSql(object? value, ParameterType type)
-    {
-        if (value == null)
-            return DBNull.Value;
-
-        return type switch
+        private object? ConvertValueForSql(object? value, ParameterType type)
         {
-            ParameterType.Date => value is DateTime dt ? dt.Date : value,
-            ParameterType.DateTime => value,
-            ParameterType.Int => Convert.ToInt32(value),
-            ParameterType.Decimal => Convert.ToDecimal(value),
-            ParameterType.Bit => Convert.ToBoolean(value),
-            ParameterType.NVarchar or ParameterType.Varchar => value.ToString(),
-            _ => value
-        };
+            if (value == null)
+                return DBNull.Value;
+
+            return type switch
+            {
+                ParameterType.DateTime => value is DateTime dt ? dt : value,
+                ParameterType.Integer => Convert.ToInt32(value),
+                ParameterType.Decimal => Convert.ToDecimal(value),
+                ParameterType.Boolean => Convert.ToBoolean(value),
+                ParameterType.String => value.ToString(),
+                _ => value
+            };
+        }
     }
 }

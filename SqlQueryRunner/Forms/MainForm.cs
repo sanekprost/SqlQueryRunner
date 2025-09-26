@@ -35,7 +35,7 @@ namespace SqlQueryRunner.Forms
             _configService = new ConfigurationService();
             _sqlFileService = new SqlFileService();
             _declareParser = new DeclareBlockParser();
-            _sqlExecutor = new SqlExecutor(); // Заглушка из предыдущих фаз
+            _sqlExecutor = new SqlExecutor(); // Заглушка для Фазы 3
             
             _availableQueries = new List<QueryInfo>();
 
@@ -410,21 +410,5 @@ namespace SqlQueryRunner.Forms
             }
             base.Dispose(disposing);
         }
-    }
-
-    /// <summary>
-    /// Информация о SQL запросе
-    /// </summary>
-    public class QueryInfo
-    {
-        public string Name { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
-        public string FilePath { get; set; } = string.Empty;
-        public List<ParameterInfo> Parameters { get; set; } = new();
-        public int ParametersCount { get; set; }
-        public bool HasAnnotations { get; set; }
-        public string? Error { get; set; }
-
-        public override string ToString() => DisplayName;
     }
 }
