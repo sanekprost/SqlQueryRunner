@@ -1,0 +1,5 @@
+C:\Users\skorb\RiderProjects\SqlQueryRunner\SqlQueryRunner\obj\Debug\net8.0-windows\SqlQueryRunner.csproj.AssemblyReference.cache
+C:\Users\skorb\RiderProjects\SqlQueryRunner\SqlQueryRunner\obj\Debug\net8.0-windows\SqlQueryRunner.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\skorb\RiderProjects\SqlQueryRunner\SqlQueryRunner\obj\Debug\net8.0-windows\SqlQueryRunner.AssemblyInfoInputs.cache
+C:\Users\skorb\RiderProjects\SqlQueryRunner\SqlQueryRunner\obj\Debug\net8.0-windows\SqlQueryRunner.AssemblyInfo.cs
+C:\Users\skorb\RiderProjects\SqlQueryRunner\SqlQueryRunner\obj\Debug\net8.0-windows\SqlQueryRunner.csproj.CoreCompileInputs.cache
